@@ -39,6 +39,48 @@ public sealed class RecipeManagerTests
         Assert.Equal(new[] { 20 }, manager.GetCookingPlan());
     }
 
+    [Fact]
+    public void AddRecipe_NewId_ReturnsTrueAndCanBeFound() {
+        var manager = CreateManager();
+        var recipe = new Recipe{Id = 2, Title = "Khichuri"};
+
+        bool result = manager.AddRecipe(recipe);
+
+        Assert.True(result);
+        Assert.Equal("Khichuri", manager.FindRecipe(2)?.Title);
+    }
+
+    [Fact]
+    public void AddRecipe_DuplicateId_ReturnsFalse() {
+        var manager = CreateManager();
+        var recipe = new Recipe{Id = 10, Title = "Khichuri"};
+
+        bool result = manager.AddRecipe(recipe);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void FindRecipe_MissingId_ReturnsNull() {
+        var manager = CreateManager();
+        Assert.Null(manager.FindRecipe(999));
+    }
+
+    [Fact]
+    public void RemoveRecipe_MissingId_ReturnsFalse(){
+        var manager = CreateManager();
+        Assert.False(manager.RemoveRecipe(999));
+        }
+
+        [Fact]
+        public void Constructor_DuplicateId_ThrowsArgumentException(){
+            var recipes = new[]{
+                new Recipe{Id = 233, Title = "Fried Rice"},
+                new Recipe{Id = 233, Title = "Fish Fry"}
+            };
+            Assert.Throws<ArgumentException>(() => new RecipeManager(recipes));
+        }
+
     private static RecipeManager CreateManager()
     {
         return new RecipeManager(new[]

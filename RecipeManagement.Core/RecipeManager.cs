@@ -18,24 +18,67 @@ public sealed class RecipeManager : IRecipeManager
 
     public RecipeManager(IEnumerable<Recipe> recipes)
     {
-        // TODO Part A: validate recipes and build Dictionary<int, Recipe>.
-        _ = recipes;
+            if (recipes==null){
+                throw new ArgumentNullException(nameof(recipes));
+            }
+            
+            foreach (Recipe recipe in recipes)
+            {
+                if (recipe.Id <= 0){
+                    throw new ArgumentException("Recipe ID must be positive.");
+                }
+                if (string.IsNullOrWhiteSpace(recipe.Title)){
+                    throw new ArgumentException("Title must not be blank.");
+                }
+                if(_recipeById.ContainsKey(recipe.Id)){
+                    throw new ArgumentException($"Duplicate Recipe ID: {recipe.Id}");
+                }
+                _recipeById.Add(recipe.Id, recipe);
+            }
+        }
+
+    public int RecipeCount => _recipeById.Count;
+    public int ShoppingItemCount => _shoppingList.Count;
+    public int CookingPlanCount => _cookingPlan.Count;
+    public int PendingInstructionCount => _activeCookingInstructions.Count;
+    public int RemovedRecipeCount => _removedRecipeIds.Count;
+
+    public bool AddRecipe(Recipe recipe){
+        if (recipe is null){
+            throw new ArgumentNullException(nameof(recipe));
+        }
+        if(recipe.Id <= 0){
+            return false;
+        }
+        if(string.IsNullOrWhiteSpace(recipe.Title)){
+            return false;
+        }
+        if(_recipeById.ContainsKey(recipe.Id)){
+            return false;
+        }
+        _recipeById.Add(recipe.Id, recipe);
+        return true;
     }
 
-    public int RecipeCount => 0;
-    public int ShoppingItemCount => 0;
-    public int CookingPlanCount => 0;
-    public int PendingInstructionCount => 0;
-    public int RemovedRecipeCount => 0;
+    public Recipe? FindRecipe(int recipeId) {
+        if (_recipeById.TryGetValue(recipeId, out Recipe? recipe)){
+            return recipe;
+        }
+        else {
+        return null;
+        }
+    }
 
-    public bool AddRecipe(Recipe recipe) =>
-        throw new NotImplementedException("Part A: implement AddRecipe.");
-
-    public Recipe? FindRecipe(int recipeId) =>
-        throw new NotImplementedException("Part A: implement FindRecipe.");
-
-    public bool RemoveRecipe(int recipeId) =>
-        throw new NotImplementedException("Part A: implement RemoveRecipe.");
+    public bool RemoveRecipe(int recipeId){
+        if(!_recipeById.ContainsKey(recipeId)){
+            return false;
+        }
+        if(_cookingPlan.Contains(recipeId)){
+            return false;
+        }
+        _recipeById.Remove(recipeId);
+        return true;
+    }
 
     public int AddIngredientsToShoppingList(int recipeId) =>
         throw new NotImplementedException("Part A: implement AddIngredientsToShoppingList.");
